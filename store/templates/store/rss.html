@@ -1,0 +1,40 @@
+{% extends 'store/_Master.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block content %}
+    <!-- Breadcrumb Start -->
+    <div class="breadcrumb-wrap">
+        <div class="container-fluid">
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'store:index' %}">Trang chủ</a></li>
+                <li class="breadcrumb-item active">RSS</li>
+            </ul>
+        </div>
+    </div>
+    <!-- Breadcrumb End -->
+
+    <!-- My Account Start -->
+    <div class="my-account">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="tab-content">
+
+
+                        {% for entry in newsfeed.entries %}
+                            <div>
+                                <h4><a href="{{ entry.link }}" target="_blank">{{ entry.title }}</a></h4>
+                                <p>
+                                    {{ entry.summary|safe }}
+                                </p>
+                            </div>
+                        {% endfor %}
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- My Account End -->
+{% endblock %}

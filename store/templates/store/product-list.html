@@ -1,0 +1,250 @@
+{% extends 'store/_Master.html' %}
+{% block title_tab %}{{ subcategory_name }}{% endblock %}
+{% load static %}
+{% load humanize %}
+
+{% block content %}
+
+    <!-- Breadcrumb Start -->
+    <div class="breadcrumb-wrap">
+        <div class="container-fluid">
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'store:index' %}">Trang chủ</a></li>
+                <li class="breadcrumb-item active">{{ subcategory_name }}</li>
+            </ul>
+        </div>
+    </div>
+    <!-- Breadcrumb End -->
+
+    <!-- Product List Start -->
+    <div class="product-view">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-lg-9">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <form method="get">
+                                <div class="product-view-top">
+                                    <div class="row">
+
+                                        <div class="col-md-7">
+                                            <div>
+                                                <h4>{{ subcategory_name }}</h4>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-2">
+                                            <div class="product-short">
+                                                <div class="form-group">
+                                                    <input type="number" required name="from_price" step="10000" min="10000" class="form-control" value="{{ from_price|floatformat:"0" }}" placeholder="Từ giá" style="border: 1px solid #353535; color: #353535;">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="product-price-range">
+                                                <div class="form-group">
+                                                    <input type="number" required name="to_price" step="10000" min="100000" class="form-control" value="{{ to_price|floatformat:"0" }}" placeholder="Đến giá" style="border: 1px solid #353535; color: #353535;">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-1">
+                                            <button type="submit" class="btn">Lọc</button>
+                                            <input type="hidden" name="product_name" value="{{ product_name }}">
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+                        {% for product in products %}
+                            <div class="col-md-4">
+                                <div class="product-item">
+                                    <div class="product-title" style="height: 110px;">
+                                        <a href="{% url 'store:product_detail' product.pk %}">{{ product.name }}</a>
+                                        {% comment %} <div class="ratting">
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                        </div> {% endcomment %}
+                                    </div>
+                                    <div class="product-image">
+                                        <a href="{% url 'store:product_detail' product.pk %}">
+                                            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                                        </a>
+                                        {% comment %} <div class="product-action">
+                                            <a href="#"><i class="fa fa-cart-plus"></i></a>
+                                            <a href="#"><i class="fa fa-heart"></i></a>
+                                            <a href="#"><i class="fa fa-search"></i></a>
+                                        </div> {% endcomment %}
+                                    </div>
+                                    <form method="post" action="{% url 'cart:buy_now' product.pk %}">
+                                        {% csrf_token %}
+                                        <div class="product-price">
+                                            <h3>{{ product.price|floatformat:0|intcomma }}<span>đ</span></h3>
+                                            <input type="hidden" name="quantity" value="1">
+                                            <button class="btn" type="submit">
+                                                <i class="fa fa-shopping-cart"></i> Mua ngay
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        
+                    </div>
+
+                    <!-- Pagination Start -->
+                    {% if products.has_other_pages %}
+                        <div class="col-md-12">
+                            <nav aria-label="Page navigation example">
+                                <ul class="pagination justify-content-center">
+
+                                    {% if products.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=1{% if request.GET.product_name %}&product_name={{ request.GET.product_name }}{% endif %}">Đầu</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ products.previous_page_number }}{% if request.GET.product_name %}&product_name={{ request.GET.product_name }}{% endif %}">Trước</a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#">Đầu</a>
+                                        </li>
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#">Trước</a>
+                                        </li>
+                                    {% endif %}
+
+                                    {% if products.number > 5 %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="#">...</a>
+                                        </li>
+                                    {% endif %}
+
+                                    {% for i in products.paginator.page_range %}
+                                        {% if i > products.number|add:"-5" %}
+                                            {% if i < products.number|add:"5" %}
+                                                {% if products.number == i %}
+                                                    <li class="page-item active">
+                                                        <a class="page-link" href="?page={{ i }}{% if request.GET.product_name %}&product_name={{ request.GET.product_name }}{% endif %}">{{ i }}</a>
+                                                    </li>
+                                                {% else %}
+                                                    <li class="page-item">
+                                                        <a class="page-link" href="?page={{ i }}{% if request.GET.product_name %}&product_name={{ request.GET.product_name }}{% endif %}">{{ i }}</a>
+                                                    </li>
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    {% if products.number < products.paginator.num_pages|add:"-5" %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="#">...</a>
+                                        </li>
+                                    {% endif %}
+
+                                    {% if products.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ products.next_page_number }}{% if request.GET.product_name %}&product_name={{ request.GET.product_name }}{% endif %}">Sau</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ products.paginator.num_pages }}{% if request.GET.product_name %}&product_name={{ request.GET.product_name }}{% endif %}">Cuối</a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#">Sau</a>
+                                        </li>
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#">Cuối</a>
+                                        </li>
+                                    {% endif %}
+
+                                </ul>
+                            </nav>
+                        </div>
+                    {% endif %}
+                    <!-- Pagination Start -->
+
+                </div>
+
+                <!-- Side Bar Start -->
+                <div class="col-lg-3 sidebar">
+                    {% include 'store/parts/subcategory_list.html' %}
+
+                    <div class="sidebar-widget widget-slider">
+                        <div class="sidebar-slider normal-slider">
+
+                            {% for product in products %}
+                                <div class="product-item">
+                                    <div class="product-title">
+                                        <a href="{% url 'store:product_detail' product.pk %}">{{ product.name }}</a>
+                                        {% comment %} <div class="ratting">
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                        </div> {% endcomment %}
+                                    </div>
+                                    <div class="product-image">
+                                        <a href="product-detail.html">
+                                            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                                        </a>
+                                        {% comment %} <div class="product-action">
+                                            <a href="#"><i class="fa fa-cart-plus"></i></a>
+                                            <a href="#"><i class="fa fa-heart"></i></a>
+                                            <a href="#"><i class="fa fa-search"></i></a>
+                                        </div> {% endcomment %}
+                                    </div>
+                                    <div class="product-price">
+                                        <h3>{{ product.price|floatformat:0|intcomma }}<span>đ</span></h3>
+                                        <a class="btn" href=""><i class="fa fa-shopping-cart"></i>Buy Now</a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                            
+                        </div>
+                    </div>
+
+                    {% comment %} <div class="sidebar-widget brands">
+                        <h2 class="title">Our Brands</h2>
+                        <ul>
+                            <li><a href="#">Nulla </a><span>(45)</span></li>
+                            <li><a href="#">Curabitur </a><span>(34)</span></li>
+                            <li><a href="#">Nunc </a><span>(67)</span></li>
+                            <li><a href="#">Ullamcorper</a><span>(74)</span></li>
+                            <li><a href="#">Fusce </a><span>(89)</span></li>
+                            <li><a href="#">Sagittis</a><span>(28)</span></li>
+                        </ul>
+                    </div>
+
+                    <div class="sidebar-widget tag">
+                        <h2 class="title">Tags Cloud</h2>
+                        <a href="#">Lorem ipsum</a>
+                        <a href="#">Vivamus</a>
+                        <a href="#">Phasellus</a>
+                        <a href="#">pulvinar</a>
+                        <a href="#">Curabitur</a>
+                        <a href="#">Fusce</a>
+                        <a href="#">Sem quis</a>
+                        <a href="#">Mollis metus</a>
+                        <a href="#">Sit amet</a>
+                        <a href="#">Vel posuere</a>
+                        <a href="#">orci luctus</a>
+                        <a href="#">Nam lorem</a>
+                    </div>{% endcomment %}
+                </div> 
+                <!-- Side Bar End -->
+            </div>
+        </div>
+    </div>
+    <!-- Product List End -->
+
+    <!-- Brand Start -->
+    {% include 'store/parts/brands.html' %}
+    <!-- Brand End -->
+        
+{% endblock %}
